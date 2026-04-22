@@ -2,13 +2,14 @@
 
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const archiver = require('archiver');
 
 const logger = require('../utils/logger');
 
-/**
- * Persist job metadata inside the output folder.
- */
+/* -------------------------------------------------------------------- */
+/*  Manifest I/O                                                         */
+/* -------------------------------------------------------------------- */
 async function writeManifest(jobDir, manifest) {
   const file = path.join(jobDir, 'manifest.json');
   await fs.promises.writeFile(file, JSON.stringify(manifest, null, 2), 'utf8');
@@ -21,16 +22,57 @@ async function readManifest(jobDir) {
   return JSON.parse(raw);
 }
 
-/**
- * Render the standalone flipbook HTML by injecting the page list into the
- * template file. Keeps the template file as the single source of truth.
- */
-async function renderStandaloneHtml(templatePath, { title, pages }) {
-  const tpl = await fs.promises.readFile(templatePath, 'utf8');
+/* -------------------------------------------------------------------- */
+/*  Template rendering                                                   */
+/*                                                                       */
+/*  The template uses "__FLIPBOOK_DATA__" as a JSON payload placeholder. */
+/*  Each page object may optionally carry `src` (absolute URL or data    */
+/*  URI). If `src` is absent, the client builds `pages/<file>` relative. */
+/* -------------------------------------------------------------------- */
+async function renderStandaloneHtml(templatePath, { title, pages, inlineScripts }) {
+  let tpl = await fs.promises.readFile(templatePath, 'utf8');
   const payload = JSON.stringify({ title, pages });
-  return tpl
+
+  tpl = tpl
     .replace(/__FLIPBOOK_TITLE__/g, escapeHtml(title))
     .replace('"__FLIPBOOK_DATA__"', payload);
+
+  if (inlineScripts) {
+    const { jquery, turnjs } = await getVendorScripts();
+    tpl = tpl.replace(
+      /<script src="https:\/\/code\.jquery\.com\/[^"]+"[^>]*><\/script>/,
+      `<script>/* jQuery inlined */\n${jquery}\n</script>`
+    );
+    tpl = tpl.replace(
+      /<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/turn\.js\/[^"]+"[^>]*><\/script>/,
+      `<script>/* turn.js inlined */\n${turnjs}\n</script>`
+    );
+  }
+
+  return tpl;
+}
+
+/**
+ * Generate a fully self-contained single-file HTML flipbook —
+ *   - every page image embedded as a base64 data URI
+ *   - jQuery + turn.js inlined so it works with or without internet
+ * Perfect for sharing one standalone .html attachment over WhatsApp/email.
+ */
+async function renderSingleFileHtml(templatePath, { title, jobDir, manifest }) {
+  const pages = await Promise.all(
+    manifest.pages.map(async (p) => {
+      const imgPath = path.join(jobDir, p.file);
+      const buffer = await fs.promises.readFile(imgPath);
+      const src = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+      return { index: p.index, src, width: p.width, height: p.height };
+    })
+  );
+
+  return renderStandaloneHtml(templatePath, {
+    title,
+    pages,
+    inlineScripts: true,
+  });
 }
 
 function escapeHtml(s) {
@@ -41,11 +83,68 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-/**
- * Stream a ZIP of a completed job (HTML + pages + thumbs + manifest).
- * Returns a promise that resolves when the archive has finished piping
- * into the given writable stream.
- */
+/* -------------------------------------------------------------------- */
+/*  Vendor script cache (jQuery + turn.js) — fetched once on first use   */
+/* -------------------------------------------------------------------- */
+const VENDOR_CACHE = { jquery: null, turnjs: null };
+
+const VENDOR_SOURCES = {
+  jquery: 'https://code.jquery.com/jquery-3.7.1.min.js',
+  turnjs: 'https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js',
+};
+
+async function getVendorScripts() {
+  if (VENDOR_CACHE.jquery && VENDOR_CACHE.turnjs) return VENDOR_CACHE;
+
+  const cacheDir = path.join(__dirname, '..', 'templates', 'vendor');
+  await fs.promises.mkdir(cacheDir, { recursive: true });
+
+  const loadOne = async (key, url) => {
+    const local = path.join(cacheDir, `${key}.min.js`);
+    if (fs.existsSync(local)) {
+      return fs.promises.readFile(local, 'utf8');
+    }
+    logger.info(`Vendoring ${key} from ${url}`);
+    const body = await httpsGet(url);
+    await fs.promises.writeFile(local, body, 'utf8');
+    return body;
+  };
+
+  VENDOR_CACHE.jquery = await loadOne('jquery', VENDOR_SOURCES.jquery);
+  VENDOR_CACHE.turnjs = await loadOne('turnjs', VENDOR_SOURCES.turnjs);
+  return VENDOR_CACHE;
+}
+
+function httpsGet(url, redirectsLeft = 3) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, (res) => {
+        if (
+          res.statusCode &&
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location &&
+          redirectsLeft > 0
+        ) {
+          return httpsGet(res.headers.location, redirectsLeft - 1)
+            .then(resolve)
+            .catch(reject);
+        }
+        if (res.statusCode !== 200) {
+          return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
+        }
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        res.on('error', reject);
+      })
+      .on('error', reject);
+  });
+}
+
+/* -------------------------------------------------------------------- */
+/*  ZIP streaming                                                        */
+/* -------------------------------------------------------------------- */
 function streamJobAsZip({ jobDir, jobId, res, templatePath, title }) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -71,27 +170,15 @@ function streamJobAsZip({ jobDir, jobId, res, templatePath, title }) {
 
       archive.pipe(res);
 
-      // 1) Flipbook HTML at root
       archive.append(html, { name: 'flipbook.html' });
-
-      // 2) Manifest
-      archive.append(JSON.stringify(manifest, null, 2), {
-        name: 'manifest.json',
-      });
-
-      // 3) Readme
+      archive.append(JSON.stringify(manifest, null, 2), { name: 'manifest.json' });
       archive.append(buildReadme(manifest), { name: 'README.txt' });
 
-      // 4) Page images + thumbs
       for (const page of manifest.pages) {
         const pageFile = path.join(jobDir, page.file);
         const thumbFile = path.join(jobDir, page.thumb);
-        if (fs.existsSync(pageFile)) {
-          archive.file(pageFile, { name: `pages/${page.file}` });
-        }
-        if (fs.existsSync(thumbFile)) {
-          archive.file(thumbFile, { name: `pages/${page.thumb}` });
-        }
+        if (fs.existsSync(pageFile)) archive.file(pageFile, { name: `pages/${page.file}` });
+        if (fs.existsSync(thumbFile)) archive.file(thumbFile, { name: `pages/${page.thumb}` });
       }
 
       archive.finalize();
@@ -114,7 +201,7 @@ function buildReadme(manifest) {
     '3) To host online, upload the entire folder to any static host',
     '   (Netlify, Vercel, GitHub Pages, Render Static Site, S3, etc.).',
     '',
-    'Powered by turn.js · Single-file portable flipbook bundle.',
+    'Powered by turn.js · Portable flipbook bundle.',
     '',
   ].join('\n');
 }
@@ -123,5 +210,7 @@ module.exports = {
   writeManifest,
   readManifest,
   renderStandaloneHtml,
+  renderSingleFileHtml,
   streamJobAsZip,
+  getVendorScripts,
 };
