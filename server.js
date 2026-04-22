@@ -13,6 +13,7 @@ const rateLimit = require('express-rate-limit');
 const config = require('./config');
 const logger = require('./utils/logger');
 const { startCleanupJob } = require('./utils/cleanup');
+const { getVendorScripts } = require('./services/flipbookBuilder');
 const errorHandler = require('./middleware/errorHandler');
 
 const uploadRoute = require('./routes/upload');
@@ -92,6 +93,19 @@ app.use(
   })
 );
 
+// Serve self-hosted jQuery + turn.js (warmed at boot; files live in
+// templates/vendor). This eliminates reliance on external CDNs which
+// can be blocked by ad-blockers, restrictive networks, or regional rules.
+app.use(
+  '/vendor',
+  express.static(path.join(__dirname, 'templates', 'vendor'), {
+    maxAge: '30d',
+    etag: true,
+    immutable: false,
+    fallthrough: true,
+  })
+);
+
 /* ------------------------------------------------------------------ */
 /*  API routes                                                        */
 /* ------------------------------------------------------------------ */
@@ -136,6 +150,10 @@ app.use(errorHandler);
 const server = app.listen(config.port, () => {
   logger.info(`Flipbook Converter listening on :${config.port} (${config.env})`);
   startCleanupJob();
+  // Warm up jQuery + turn.js so /vendor/*.min.js responds immediately
+  getVendorScripts()
+    .then(() => logger.info('Vendor scripts ready at /vendor/*.min.js'))
+    .catch((err) => logger.warn('Vendor warm-up failed (CDN fallback will be used):', err.message));
 });
 
 // Graceful shutdown
