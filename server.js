@@ -18,6 +18,7 @@ const errorHandler = require('./middleware/errorHandler');
 const uploadRoute = require('./routes/upload');
 const flipbookRoute = require('./routes/flipbook');
 const downloadRoute = require('./routes/download');
+const viewRoute = require('./routes/view');
 
 const app = express();
 
@@ -102,6 +103,9 @@ app.use('/api/upload', uploadRoute);
 app.use('/api/flipbook', flipbookRoute);
 app.use('/api/download', downloadRoute);
 
+// Public hosted-flipbook viewer (shareable URLs like /view/abc123)
+app.use('/view', viewRoute);
+
 /* ------------------------------------------------------------------ */
 /*  SEO + root                                                        */
 /* ------------------------------------------------------------------ */
@@ -111,7 +115,11 @@ app.get('/', (_req, res) => {
 
 // SPA-style 404 for any unknown non-API route => serve index
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/') || req.path.startsWith('/output/')) {
+  if (
+    req.path.startsWith('/api/') ||
+    req.path.startsWith('/output/') ||
+    req.path.startsWith('/view/')
+  ) {
     return next();
   }
   res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
