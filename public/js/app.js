@@ -28,7 +28,10 @@
   const fbIndicator = $('#fb-indicator');
   const fbPrev = $('#fb-prev');
   const fbNext = $('#fb-next');
-  const downloadBtn = $('#download-btn');
+  const shareBtn = $('#share-btn');
+  const shareHint = $('#share-hint');
+  const downloadHtmlBtn = $('#download-html-btn');
+  const downloadZipBtn = $('#download-zip-btn');
   const restartBtn = $('#restart-btn');
 
   // --------------------------------------------------------------- State
@@ -77,6 +80,10 @@
   fileClear.addEventListener('click', resetForm);
   submitBtn.addEventListener('click', startUpload);
   restartBtn.addEventListener('click', fullReset);
+
+  shareBtn.addEventListener('click', onShareClick);
+  downloadHtmlBtn.addEventListener('click', () => triggerDownload('single'));
+  downloadZipBtn.addEventListener('click', () => triggerDownload('zip'));
 
   fbPrev.addEventListener('click', () => state.turnInstance && $('#flipbook').turn('previous'));
   fbNext.addEventListener('click', () => state.turnInstance && $('#flipbook').turn('next'));
@@ -275,13 +282,13 @@
       if (!r.ok) throw new Error('Failed to load flipbook');
       const manifest = await r.json();
       renderFlipbook(manifest);
-      downloadBtn.href = `/api/download/${jobId}?title=${encodeURIComponent(manifest.title || '')}`;
-      downloadBtn.setAttribute('download', `flipbook-${jobId}.zip`);
+      // Stash data for the share/download handlers
+      state.currentTitle = manifest.title || 'My Flipbook';
       fbSection.hidden = false;
       progressBox.hidden = true;
       state.uploading = false;
       submitBtn.disabled = false;
-      // Smooth scroll after layout settles
+      shareHint.hidden = true;
       setTimeout(() => fbSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     } catch (err) {
       failUpload(err.message);
@@ -363,6 +370,47 @@
   }
 
   // --------------------------------------------------------------- Utils
+  async function onShareClick() {
+    if (!state.jobId) return;
+    const url = `${location.origin}/view/${state.jobId}`;
+    try {
+      // Try the native share sheet first (great on mobile)
+      if (navigator.share) {
+        await navigator.share({
+          title: state.currentTitle || 'Flipbook',
+          text: 'View this flipbook',
+          url,
+        });
+        return;
+      }
+    } catch (_) {
+      // user cancelled native share — fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      shareHint.textContent =
+        '🔗 Link copied to clipboard — paste into WhatsApp, email, or anywhere. Active for about 2 hours.';
+      shareHint.hidden = false;
+      setTimeout(() => (shareHint.hidden = true), 6000);
+    } catch (_) {
+      // Clipboard blocked — show the URL so user can copy manually
+      shareHint.textContent = 'Copy this link: ' + url;
+      shareHint.hidden = false;
+    }
+  }
+
+  function triggerDownload(kind) {
+    if (!state.jobId) return;
+    const title = encodeURIComponent(state.currentTitle || '');
+    const url =
+      kind === 'single'
+        ? `/api/download/${state.jobId}/single?title=${title}`
+        : `/api/download/${state.jobId}?title=${title}`;
+    // Forcing a navigation triggers the browser download dialog without
+    // popping a new tab, even for HTML responses (Content-Disposition: attachment).
+    window.location.href = url;
+  }
+
   function setProgress(pct, detail, stage) {
     const clamped = Math.max(0, Math.min(100, pct));
     progressFill.style.width = clamped + '%';
