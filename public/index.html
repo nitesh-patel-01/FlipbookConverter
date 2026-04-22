@@ -11,7 +11,7 @@
   <meta name="keywords" content="flipbook converter, pdf to flipbook, pdf flipbook, turn.js, page flip animation, digital magazine, html flipbook, online flipbook maker, flipbook download" />
   <meta name="author" content="Flipbook Converter" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
-  <link rel="canonical" href="https://flipbook-converter.onrender.com/" />
+  <link rel="canonical" href="https://flipbook-converter-1.onrender.com/" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -23,23 +23,21 @@
   <meta property="og:site_name" content="Flipbook Converter" />
   <meta property="og:title" content="Flipbook Converter — Turn PDFs Into Interactive Flipbooks" />
   <meta property="og:description" content="Convert PDFs and images into beautiful interactive flipbooks with realistic page-turn animations. Download as a portable HTML bundle." />
-  <meta property="og:url" content="https://flipbook-converter.onrender.com/" />
-  <meta property="og:image" content="https://flipbook-converter.onrender.com/og-image.svg" />
+  <meta property="og:url" content="https://flipbook-converter-1.onrender.com/" />
+  <meta property="og:image" content="https://flipbook-converter-1.onrender.com/og-image.svg" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Flipbook Converter — PDF to Interactive Flipbook" />
   <meta name="twitter:description" content="Convert PDFs and images into beautiful interactive flipbooks. Preview live and download as HTML." />
-  <meta name="twitter:image" content="https://flipbook-converter.onrender.com/og-image.svg" />
+  <meta name="twitter:image" content="https://flipbook-converter-1.onrender.com/og-image.svg" />
 
   <!-- Performance hints -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://code.jquery.com" crossorigin />
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
 
-  <!-- Fonts: Fraunces (display) + Inter Tight (UI) -->
+  <!-- Fonts -->
   <link
     href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Inter+Tight:wght@400;500;600&display=swap"
     rel="stylesheet"
@@ -53,7 +51,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Flipbook Converter",
-    "url": "https://flipbook-converter.onrender.com/",
+    "url": "https://flipbook-converter-1.onrender.com/",
     "description": "Convert PDFs and images into interactive flipbooks with realistic page-turn animations. Download as a portable HTML ZIP.",
     "applicationCategory": "MultimediaApplication",
     "operatingSystem": "All",
@@ -62,15 +60,26 @@
   }
   </script>
 
-  <!-- Analytics placeholder (replace GA_MEASUREMENT_ID to enable)
-  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <!-- jQuery + turn.js — self-hosted from our own server for reliability.
+       /vendor/* paths are served by Express; the bundled files are
+       populated at server boot by services/flipbookBuilder::getVendorScripts.
+       If they ever fail to load, fall back to the public CDNs. -->
+  <script src="/vendor/jquery.min.js"></script>
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'GA_MEASUREMENT_ID');
+    if (!window.jQuery) {
+      document.write(
+        '<script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"><\/script>'
+      );
+    }
   </script>
-  -->
+  <script src="/vendor/turn.min.js"></script>
+  <script>
+    if (!window.jQuery || !window.jQuery.fn || !window.jQuery.fn.turn) {
+      document.write(
+        '<script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js" crossorigin="anonymous"><\/script>'
+      );
+    }
+  </script>
 </head>
 <body>
   <!-- Decorative background -->
@@ -111,11 +120,9 @@
         can host anywhere.
       </p>
 
-      <!-- Upload card -->
       <section id="upload" class="upload-card" aria-labelledby="upload-title">
         <h2 id="upload-title" class="visually-hidden">Upload your file</h2>
 
-        <!-- Dropzone -->
         <div
           id="dropzone"
           class="dropzone"
@@ -141,7 +148,6 @@
           <div class="dropzone__sub">or <u>click to browse</u> — PDF, JPG, PNG · up to 50 MB</div>
         </div>
 
-        <!-- File preview -->
         <div id="file-preview" class="file-preview" hidden>
           <div class="file-preview__row">
             <div class="file-preview__icon" aria-hidden="true">📄</div>
@@ -161,7 +167,6 @@
           </button>
         </div>
 
-        <!-- Progress -->
         <div id="progress-box" class="progress-box" hidden aria-live="polite">
           <div class="progress-box__head">
             <span id="progress-stage" class="progress-box__stage">Uploading</span>
@@ -173,7 +178,6 @@
           <div id="progress-detail" class="progress-box__detail">Preparing…</div>
         </div>
 
-        <!-- Error -->
         <div id="error-box" class="error-box" hidden role="alert"></div>
       </section>
 
@@ -293,7 +297,7 @@
         </details>
         <details class="faq__item">
           <summary>Does it work offline after download?</summary>
-          <p>Almost. The exported HTML loads jQuery and turn.js from CDN by default. For fully offline use, drop both files next to <code>flipbook.html</code> and update the script tags.</p>
+          <p>Yes — the single-file HTML export embeds images, jQuery, and turn.js. Works 100% offline.</p>
         </details>
       </div>
     </section>
@@ -308,10 +312,6 @@
       </span>
     </div>
   </footer>
-
-  <!-- jQuery + turn.js for the live preview -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js" crossorigin="anonymous"></script>
 
   <script src="/js/app.js" defer></script>
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
