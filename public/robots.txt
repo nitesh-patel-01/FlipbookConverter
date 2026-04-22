@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /output/
+Disallow: /storage/
+
+Sitemap: https://flipbook-converter.onrender.com/sitemap.xml

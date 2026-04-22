@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e0c0a" />
+
+  <!-- Primary SEO -->
+  <title>Flipbook Converter — Turn PDFs & Images Into Interactive Flipbooks</title>
+  <meta name="description" content="Convert PDFs and images into beautiful interactive flipbooks with realistic page-turn animations. Download as a self-contained HTML ZIP. Free, fast, mobile-friendly." />
+  <meta name="keywords" content="flipbook converter, pdf to flipbook, pdf flipbook, turn.js, page flip animation, digital magazine, html flipbook, online flipbook maker, flipbook download" />
+  <meta name="author" content="Flipbook Converter" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <link rel="canonical" href="https://flipbook-converter.onrender.com/" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Flipbook Converter" />
+  <meta property="og:title" content="Flipbook Converter — Turn PDFs Into Interactive Flipbooks" />
+  <meta property="og:description" content="Convert PDFs and images into beautiful interactive flipbooks with realistic page-turn animations. Download as a portable HTML bundle." />
+  <meta property="og:url" content="https://flipbook-converter.onrender.com/" />
+  <meta property="og:image" content="https://flipbook-converter.onrender.com/og-image.svg" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Flipbook Converter — PDF to Interactive Flipbook" />
+  <meta name="twitter:description" content="Convert PDFs and images into beautiful interactive flipbooks. Preview live and download as HTML." />
+  <meta name="twitter:image" content="https://flipbook-converter.onrender.com/og-image.svg" />
+
+  <!-- Performance hints -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://code.jquery.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+
+  <!-- Fonts: Fraunces (display) + Inter Tight (UI) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Inter+Tight:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Flipbook Converter",
+    "url": "https://flipbook-converter.onrender.com/",
+    "description": "Convert PDFs and images into interactive flipbooks with realistic page-turn animations. Download as a portable HTML ZIP.",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript. Modern browser.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+
+  <!-- Analytics placeholder (replace GA_MEASUREMENT_ID to enable)
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'GA_MEASUREMENT_ID');
+  </script>
+  -->
+</head>
+<body>
+  <!-- Decorative background -->
+  <div class="bg-grain" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--1" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--2" aria-hidden="true"></div>
+
+  <!-- Site header -->
+  <header class="site-header" role="banner">
+    <a class="brand" href="/" aria-label="Flipbook Converter home">
+      <span class="brand__mark" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 4v24M4 8h10a4 4 0 0 1 4 4v14M28 8H18a4 4 0 0 0-4 4v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand__name">Flipbook<span class="brand__name-dim">Converter</span></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Hero + upload -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__meta">
+        <span class="hero__tag">Free · No signup · Private</span>
+      </div>
+      <h1 id="hero-title" class="hero__title">
+        Turn any <em>PDF</em> into an<br />
+        interactive <span class="accent">flipbook</span>.
+      </h1>
+      <p class="hero__sub">
+        Upload a PDF or a stack of images. We’ll render the pages, stitch them into a
+        realistic page-turning book, and let you download a portable HTML bundle you
+        can host anywhere.
+      </p>
+
+      <!-- Upload card -->
+      <section id="upload" class="upload-card" aria-labelledby="upload-title">
+        <h2 id="upload-title" class="visually-hidden">Upload your file</h2>
+
+        <!-- Dropzone -->
+        <div
+          id="dropzone"
+          class="dropzone"
+          tabindex="0"
+          role="button"
+          aria-label="Click or drop files to upload. PDF up to 50 MB, or multiple JPG/PNG images."
+        >
+          <input
+            id="file-input"
+            type="file"
+            accept="application/pdf,image/jpeg,image/png"
+            multiple
+            hidden
+          />
+          <div class="dropzone__icon" aria-hidden="true">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="dropzone__title">Drop your PDF or images here</div>
+          <div class="dropzone__sub">or <u>click to browse</u> — PDF, JPG, PNG · up to 50 MB</div>
+        </div>
+
+        <!-- File preview -->
+        <div id="file-preview" class="file-preview" hidden>
+          <div class="file-preview__row">
+            <div class="file-preview__icon" aria-hidden="true">📄</div>
+            <div class="file-preview__meta">
+              <div id="file-name" class="file-preview__name">filename.pdf</div>
+              <div id="file-info" class="file-preview__info">0 KB</div>
+            </div>
+            <button type="button" id="file-clear" class="btn-ghost" aria-label="Remove file">✕</button>
+          </div>
+          <div class="form-row">
+            <label class="label" for="title-input">Flipbook title</label>
+            <input id="title-input" class="input" type="text" maxlength="120" placeholder="My Flipbook" />
+          </div>
+          <button id="submit-btn" class="btn-primary" type="button">
+            <span class="btn-primary__label">Create flipbook</span>
+            <span class="btn-primary__arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
+
+        <!-- Progress -->
+        <div id="progress-box" class="progress-box" hidden aria-live="polite">
+          <div class="progress-box__head">
+            <span id="progress-stage" class="progress-box__stage">Uploading</span>
+            <span id="progress-pct" class="progress-box__pct">0%</span>
+          </div>
+          <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="progress-fill" class="progress-bar__fill"></div>
+          </div>
+          <div id="progress-detail" class="progress-box__detail">Preparing…</div>
+        </div>
+
+        <!-- Error -->
+        <div id="error-box" class="error-box" hidden role="alert"></div>
+      </section>
+
+      <p class="hero__footnote">
+        Files are processed on our server and auto-deleted after 2 hours.
+      </p>
+    </section>
+
+    <!-- Flipbook preview -->
+    <section
+      id="flipbook-section"
+      class="flipbook-section"
+      aria-labelledby="flipbook-title"
+      hidden
+    >
+      <header class="flipbook-section__head">
+        <h2 id="flipbook-title" class="flipbook-section__title">Your flipbook is ready</h2>
+        <div class="flipbook-section__actions">
+          <a id="download-btn" class="btn-primary" href="#" download>
+            <span class="btn-primary__label">Download ZIP</span>
+            <span class="btn-primary__arrow" aria-hidden="true">↓</span>
+          </a>
+          <button id="restart-btn" class="btn-ghost" type="button">Start over</button>
+        </div>
+      </header>
+
+      <div class="flipbook-stage">
+        <button class="nav-arrow nav-arrow--left" id="fb-prev" aria-label="Previous page">‹</button>
+        <div id="flipbook" class="flipbook" aria-live="polite"></div>
+        <button class="nav-arrow nav-arrow--right" id="fb-next" aria-label="Next page">›</button>
+      </div>
+
+      <div class="flipbook-meta">
+        <span id="fb-indicator" class="flipbook-meta__indicator">1 / 1</span>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how-it-works" class="section" aria-labelledby="hiw-title">
+      <p class="section__eyebrow">How it works</p>
+      <h2 id="hiw-title" class="section__title">From <em>flat file</em> to flippable book in three steps.</h2>
+      <ol class="steps">
+        <li class="step">
+          <span class="step__num">01</span>
+          <h3 class="step__title">Upload</h3>
+          <p class="step__body">Drop a PDF or a set of images. We validate by magic bytes — no executables sneak in.</p>
+        </li>
+        <li class="step">
+          <span class="step__num">02</span>
+          <h3 class="step__title">Render &amp; optimise</h3>
+          <p class="step__body">We rasterise pages at print-friendly DPI and compress them with Sharp for fast loads.</p>
+        </li>
+        <li class="step">
+          <span class="step__num">03</span>
+          <h3 class="step__title">Preview &amp; download</h3>
+          <p class="step__body">Flip pages live, then export a portable HTML ZIP you can host on any static server.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="section" aria-labelledby="feat-title">
+      <p class="section__eyebrow">Features</p>
+      <h2 id="feat-title" class="section__title">Built for the way you actually publish.</h2>
+      <div class="feature-grid">
+        <article class="feature">
+          <h3 class="feature__title">Realistic page turns</h3>
+          <p class="feature__body">Powered by turn.js with configurable gradients, acceleration, and elevation.</p>
+        </article>
+        <article class="feature">
+          <h3 class="feature__title">Chunked PDF processing</h3>
+          <p class="feature__body">Large PDFs are rendered in bounded chunks so the event loop stays responsive.</p>
+        </article>
+        <article class="feature">
+          <h3 class="feature__title">Portable export</h3>
+          <p class="feature__body">The ZIP contains an <code>flipbook.html</code> plus optimised page images — host anywhere.</p>
+        </article>
+        <article class="feature">
+          <h3 class="feature__title">Mobile-ready</h3>
+          <p class="feature__body">The preview and exported flipbook both adapt to phones, tablets, and desktops.</p>
+        </article>
+        <article class="feature">
+          <h3 class="feature__title">Privacy-first</h3>
+          <p class="feature__body">Files are stored briefly and auto-deleted. No accounts, no tracking by default.</p>
+        </article>
+        <article class="feature">
+          <h3 class="feature__title">Hardened uploads</h3>
+          <p class="feature__body">Magic-byte validation, size limits, rate limiting, Helmet, CSP.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="section" aria-labelledby="faq-title">
+      <p class="section__eyebrow">FAQ</p>
+      <h2 id="faq-title" class="section__title">Questions, answered.</h2>
+      <div class="faq">
+        <details class="faq__item">
+          <summary>What is the max file size?</summary>
+          <p>By default 50 MB per upload and up to 300 pages per PDF. You can raise both by editing environment variables.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Do you store my files?</summary>
+          <p>Uploads and generated assets are removed automatically after two hours. Nothing is shared with third parties.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Can I host the exported flipbook?</summary>
+          <p>Yes — the ZIP is a self-contained HTML bundle. Upload the folder to any static host: Netlify, Vercel, GitHub Pages, S3, Render Static, etc.</p>
+        </details>
+        <details class="faq__item">
+          <summary>Does it work offline after download?</summary>
+          <p>Almost. The exported HTML loads jQuery and turn.js from CDN by default. For fully offline use, drop both files next to <code>flipbook.html</code> and update the script tags.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="site-footer__inner">
+      <span>© <span id="year"></span> Flipbook Converter</span>
+      <span class="site-footer__links">
+        <a href="/robots.txt">robots.txt</a>
+        <a href="/sitemap.xml">sitemap</a>
+      </span>
+    </div>
+  </footer>
+
+  <!-- jQuery + turn.js for the live preview -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js" crossorigin="anonymous"></script>
+
+  <script src="/js/app.js" defer></script>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

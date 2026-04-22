@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: flipbook-converter
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MAX_UPLOAD_SIZE_MB
+        value: "50"
+      - key: PDF_MAX_PAGES
+        value: "300"
+      - key: PDF_DENSITY
+        value: "150"
+      - key: IMAGE_QUALITY
+        value: "82"
+      - key: IMAGE_MAX_WIDTH
+        value: "1400"
+      - key: FILE_TTL_MS
+        value: "7200000"
+      - key: CLEANUP_INTERVAL_MS
+        value: "1800000"
+      - key: PUBLIC_BASE_URL
+        value: https://flipbook-converter.onrender.com

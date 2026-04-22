@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>__FLIPBOOK_TITLE__ — Flipbook</title>
+<style>
+  :root {
+    --bg-0:#0e0c0a;
+    --bg-1:#171411;
+    --ink:#efe7d7;
+    --ink-dim:#a89f8e;
+    --accent:#d9a441;
+    --line:rgba(255,255,255,.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(217,164,65,.08), transparent 60%),
+      radial-gradient(900px 500px at 100% 110%, rgba(217,164,65,.05), transparent 60%),
+      var(--bg-0);
+    color: var(--ink);
+    font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    overflow: hidden;
+  }
+  header {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px;
+    background: linear-gradient(to bottom, rgba(14,12,10,.95), rgba(14,12,10,0));
+    z-index: 20; pointer-events: none;
+  }
+  header .title {
+    font-size: 18px; letter-spacing: .04em;
+    color: var(--ink);
+  }
+  header .title small { color: var(--ink-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .2em; display:block; }
+  .stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 64px 16px;
+  }
+  .book-wrap {
+    max-width: 100%; max-height: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #flipbook {
+    background: var(--bg-1);
+    box-shadow: 0 30px 80px rgba(0,0,0,.6);
+  }
+  #flipbook .page { background: #fff; overflow: hidden; }
+  #flipbook .page img { display:block; width:100%; height:100%; object-fit: cover; }
+  .placeholder {
+    display:flex; align-items:center; justify-content:center; height:100%;
+    color:#444; font-family: system-ui, sans-serif;
+  }
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    display: flex; gap: 14px; justify-content: center; align-items: center;
+    padding: 14px;
+    background: linear-gradient(to top, rgba(14,12,10,.95), rgba(14,12,10,0));
+    z-index: 20;
+    font-family: system-ui, -apple-system, sans-serif; font-size: 13px;
+  }
+  .btn {
+    appearance: none; border: 1px solid var(--line);
+    background: rgba(255,255,255,.04); color: var(--ink);
+    padding: 10px 16px; border-radius: 999px;
+    cursor: pointer; letter-spacing: .05em; font-weight: 500;
+    transition: background .2s, border-color .2s, transform .2s;
+  }
+  .btn:hover { background: rgba(217,164,65,.12); border-color: var(--accent); }
+  .btn:active { transform: scale(.97); }
+  .page-indicator {
+    color: var(--ink-dim); font-variant-numeric: tabular-nums;
+    letter-spacing: .15em; text-transform: uppercase; font-size: 11px;
+  }
+  @media (max-width: 720px) {
+    header { padding: 10px 14px; }
+    header .title { font-size: 14px; }
+    footer .btn { padding: 8px 12px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="title">
+      <small>Flipbook</small>
+      __FLIPBOOK_TITLE__
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="book-wrap">
+      <div id="flipbook"></div>
+    </div>
+  </main>
+
+  <footer>
+    <button class="btn" id="prev" aria-label="Previous page">← Prev</button>
+    <span class="page-indicator" id="indicator">1</span>
+    <button class="btn" id="next" aria-label="Next page">Next →</button>
+    <button class="btn" id="fullscreen" aria-label="Toggle fullscreen">⤢ Fullscreen</button>
+  </footer>
+
+  <!-- jQuery + turn.js from CDN. For fully-offline use, place both files
+       next to this HTML and change the src= attributes accordingly. -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js" crossorigin="anonymous"></script>
+
+  <script>
+    // Payload injected by the server
+    const DATA = "__FLIPBOOK_DATA__";
+
+    function computeBookSize() {
+      const maxW = window.innerWidth - 40;
+      const maxH = window.innerHeight - 160;
+      // Turn.js works best with fixed dimensions; target an A4-ish ratio (√2)
+      const pageRatio = 1.414;
+      let pageW = Math.min(520, Math.floor(maxW / 2));
+      let pageH = Math.floor(pageW * pageRatio);
+      if (pageH > maxH) {
+        pageH = maxH;
+        pageW = Math.floor(pageH / pageRatio);
+      }
+      return { w: pageW * 2, h: pageH };
+    }
+
+    function buildPages(pages) {
+      const $fb = $('#flipbook').empty();
+      // Opening cover (blank so real page 1 is on the right)
+      $fb.append('<div class="page"><div class="placeholder">Cover</div></div>');
+      pages.forEach((p) => {
+        const img = $('<img>').attr('loading', 'lazy').attr('alt', 'Page ' + p.index).attr('src', 'pages/' + p.file);
+        $fb.append($('<div class="page"></div>').append(img));
+      });
+      if (pages.length % 2 === 1) {
+        $fb.append('<div class="page"><div class="placeholder">End</div></div>');
+      }
+    }
+
+    $(function () {
+      const payload = DATA || { title: '', pages: [] };
+      if (!payload.pages || !payload.pages.length) {
+        $('#flipbook').html('<div class="placeholder" style="width:400px;height:560px">No pages</div>');
+        return;
+      }
+      buildPages(payload.pages);
+
+      const size = computeBookSize();
+      $('#flipbook').turn({
+        width: size.w,
+        height: size.h,
+        autoCenter: true,
+        gradients: true,
+        acceleration: true,
+        elevation: 50,
+        duration: 900,
+        when: {
+          turned: function (_, page) {
+            $('#indicator').text(page + ' / ' + ($('#flipbook').turn('pages')));
+          }
+        }
+      });
+      $('#indicator').text('1 / ' + $('#flipbook').turn('pages'));
+
+      $('#prev').on('click', () => $('#flipbook').turn('previous'));
+      $('#next').on('click', () => $('#flipbook').turn('next'));
+      $('#fullscreen').on('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      });
+      $(document).on('keydown', (e) => {
+        if (e.key === 'ArrowLeft') $('#flipbook').turn('previous');
+        if (e.key === 'ArrowRight') $('#flipbook').turn('next');
+      });
+      let resizeT;
+      $(window).on('resize', () => {
+        clearTimeout(resizeT);
+        resizeT = setTimeout(() => {
+          const s = computeBookSize();
+          $('#flipbook').turn('size', s.w, s.h);
+        }, 120);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+.env
+.env.local
+.env.*.local
+
+# Runtime storage — never commit uploads or generated flipbooks
+storage/uploads/*
+storage/output/*
+!storage/uploads/.gitkeep
+!storage/output/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.swp
+
+# Logs
+logs
+*.log
+
+# Coverage
+coverage
+.nyc_output
