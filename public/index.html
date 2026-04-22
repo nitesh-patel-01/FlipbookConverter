@@ -192,11 +192,19 @@
       <header class="flipbook-section__head">
         <h2 id="flipbook-title" class="flipbook-section__title">Your flipbook is ready</h2>
         <div class="flipbook-section__actions">
-          <a id="download-btn" class="btn-primary" href="#" download>
-            <span class="btn-primary__label">Download ZIP</span>
-            <span class="btn-primary__arrow" aria-hidden="true">↓</span>
-          </a>
+          <button id="share-btn" class="btn-primary" type="button" title="Copy a shareable link">
+            <span class="btn-primary__label">🔗 Copy share link</span>
+          </button>
+          <button id="download-html-btn" class="btn-ghost" type="button" title="Single self-contained HTML file">
+            📄 Download HTML
+          </button>
+          <button id="download-zip-btn" class="btn-ghost" type="button" title="Full bundle for self-hosting">
+            📦 Download ZIP
+          </button>
           <button id="restart-btn" class="btn-ghost" type="button">Start over</button>
+        </div>
+        <div id="share-hint" class="share-hint" hidden>
+          Share link copied — paste it into WhatsApp, email, or anywhere. Active for about 2 hours.
         </div>
       </header>
 
