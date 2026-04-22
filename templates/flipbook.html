@@ -32,30 +32,14 @@
     background: linear-gradient(to bottom, rgba(14,12,10,.95), rgba(14,12,10,0));
     z-index: 20; pointer-events: none;
   }
-  header .title {
-    font-size: 18px; letter-spacing: .04em;
-    color: var(--ink);
-  }
+  header .title { font-size: 18px; letter-spacing: .04em; color: var(--ink); }
   header .title small { color: var(--ink-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .2em; display:block; }
-  .stage {
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    padding: 64px 16px;
-  }
-  .book-wrap {
-    max-width: 100%; max-height: 100%;
-    display: flex; align-items: center; justify-content: center;
-  }
-  #flipbook {
-    background: var(--bg-1);
-    box-shadow: 0 30px 80px rgba(0,0,0,.6);
-  }
+  .stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 64px 16px; }
+  .book-wrap { max-width: 100%; max-height: 100%; display: flex; align-items: center; justify-content: center; }
+  #flipbook { background: var(--bg-1); box-shadow: 0 30px 80px rgba(0,0,0,.6); }
   #flipbook .page { background: #fff; overflow: hidden; }
   #flipbook .page img { display:block; width:100%; height:100%; object-fit: cover; }
-  .placeholder {
-    display:flex; align-items:center; justify-content:center; height:100%;
-    color:#444; font-family: system-ui, sans-serif;
-  }
+  .placeholder { display:flex; align-items:center; justify-content:center; height:100%; color:#444; font-family: system-ui, sans-serif; }
   footer {
     position: fixed; left: 0; right: 0; bottom: 0;
     display: flex; gap: 14px; justify-content: center; align-items: center;
@@ -73,10 +57,7 @@
   }
   .btn:hover { background: rgba(217,164,65,.12); border-color: var(--accent); }
   .btn:active { transform: scale(.97); }
-  .page-indicator {
-    color: var(--ink-dim); font-variant-numeric: tabular-nums;
-    letter-spacing: .15em; text-transform: uppercase; font-size: 11px;
-  }
+  .page-indicator { color: var(--ink-dim); font-variant-numeric: tabular-nums; letter-spacing: .15em; text-transform: uppercase; font-size: 11px; }
   @media (max-width: 720px) {
     header { padding: 10px 14px; }
     header .title { font-size: 14px; }
@@ -105,19 +86,17 @@
     <button class="btn" id="fullscreen" aria-label="Toggle fullscreen">⤢ Fullscreen</button>
   </footer>
 
-  <!-- jQuery + turn.js from CDN. For fully-offline use, place both files
-       next to this HTML and change the src= attributes accordingly. -->
+  <!-- jQuery + turn.js. In single-file exports these tags are replaced
+       with inlined script bodies by the server (see flipbookBuilder.js). -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js" crossorigin="anonymous"></script>
 
   <script>
-    // Payload injected by the server
     const DATA = "__FLIPBOOK_DATA__";
 
     function computeBookSize() {
       const maxW = window.innerWidth - 40;
       const maxH = window.innerHeight - 160;
-      // Turn.js works best with fixed dimensions; target an A4-ish ratio (√2)
       const pageRatio = 1.414;
       let pageW = Math.min(520, Math.floor(maxW / 2));
       let pageH = Math.floor(pageW * pageRatio);
@@ -130,10 +109,11 @@
 
     function buildPages(pages) {
       const $fb = $('#flipbook').empty();
-      // Opening cover (blank so real page 1 is on the right)
       $fb.append('<div class="page"><div class="placeholder">Cover</div></div>');
       pages.forEach((p) => {
-        const img = $('<img>').attr('loading', 'lazy').attr('alt', 'Page ' + p.index).attr('src', 'pages/' + p.file);
+        const img = $('<img>').attr('loading', 'lazy').attr('alt', 'Page ' + p.index);
+        // `src` is set for hosted/single-file modes; fall back to relative path for ZIP mode.
+        img.attr('src', p.src || ('pages/' + p.file));
         $fb.append($('<div class="page"></div>').append(img));
       });
       if (pages.length % 2 === 1) {
