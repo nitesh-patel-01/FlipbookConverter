@@ -111,7 +111,7 @@ async function getVendorScripts() {
   };
 
   VENDOR_CACHE.jquery = await loadOne('jquery', VENDOR_SOURCES.jquery);
-  VENDOR_CACHE.turnjs = await loadOne('turnjs', VENDOR_SOURCES.turnjs);
+  VENDOR_CACHE.turnjs = await loadOne('turn', VENDOR_SOURCES.turnjs);
   return VENDOR_CACHE;
 }
 
